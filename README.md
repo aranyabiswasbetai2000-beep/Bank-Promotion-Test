@@ -1,49 +1,228 @@
-if (list.length === 0) {
-    container.innerHTML = <div style="text-align:center; padding:20px; color:#64748b;">No questions in this filter.</div>;
-    return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Promotion Exam Mock Test</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background-color: #f1f5f9; color: #1e293b; padding-bottom: 40px; }
+  header { background: #1e1b4b; color: white; padding: 12px 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+  .title-area h1 { font-size: 15px; font-weight: 700; color: #f8fafc; }
+  .title-area p { font-size: 11px; color: #a5b4fc; }
+  .timer-box { background: #0f172a; padding: 6px 12px; border-radius: 6px; border: 1px solid #312e81; font-size: 13px; font-weight: 700; color: #fbbf24; font-family: monospace; }
+  .submit-btn { background: #059669; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .submit-btn:hover { background: #047857; }
+  .container { max-width: 900px; margin: 0 auto; padding: 14px; }
+  .hidden { display: none !important; }
+  
+  /* Set Selector Cards */
+  .set-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 14px; }
+  @media(min-width: 600px) { .set-grid { grid-template-columns: 1fr 1fr; } }
+  .set-card { background: white; border-radius: 10px; padding: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .set-badge { display: inline-block; background: #e0e7ff; color: #3730a3; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; margin-bottom: 6px; }
+  .set-card h2 { font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+  .set-card p { font-size: 12px; color: #64748b; margin-bottom: 12px; }
+  .start-btn { width: 100%; background: #4338ca; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  
+  /* History Panel */
+  .history-card { background: white; border-radius: 10px; padding: 16px; border: 1px solid #e2e8f0; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+  .history-item:last-child { border-bottom: none; }
+  .btn-sm { padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; border: none; cursor: pointer; }
+  .btn-view { background: #4338ca; color: white; }
+  .btn-del { background: #fee2e2; color: #b91c1c; margin-left: 6px; }
+
+  /* Question View */
+  .q-panel { background: white; border-radius: 10px; padding: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 14px; }
+  .q-header { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; margin-bottom: 14px; font-weight: 600; }
+  .q-text { font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.5; margin-bottom: 16px; }
+  .options-list { display: flex; flex-direction: column; gap: 8px; }
+  .option-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; transition: all 0.15s; background: white; font-size: 13px; line-height: 1.4; }
+  .option-item.selected { border-color: #4338ca; background: #eef2ff; color: #1e1b4b; font-weight: 600; }
+  .opt-letter { width: 22px; height: 22px; border-radius: 50%; background: #f1f5f9; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; border: 1px solid #cbd5e1; }
+.option-item.selected .opt-letter { background: #4338ca; color: white; border-color: #4338ca; }
+  
+  .q-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #f1f5f9; gap: 8px; flex-wrap: wrap; }
+  .nav-btn { background: #e2e8f0; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; color: #334155; }
+  .nav-btn.primary { background: #4338ca; color: white; }
+  .clear-btn { background: transparent; border: 1px solid #fca5a5; color: #dc2626; padding: 7px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
+  
+  /* Palette */
+  .palette-panel { background: white; border-radius: 10px; padding: 14px; border: 1px solid #e2e8f0; }
+  .palette-header { font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .palette-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; max-height: 200px; overflow-y: auto; padding: 4px; }
+  .palette-btn { height: 28px; border: 1px solid #e2e8f0; border-radius: 4px; background: #f8fafc; font-size: 10px; font-weight: 600; cursor: pointer; color: #475569; }
+  .palette-btn.active { outline: 2px solid #4338ca; }
+  .palette-btn.answered { background: #059669; color: white; border-color: #059669; }
+  
+  /* Scorecard & Review */
+  .score-card { background: white; border-radius: 10px; padding: 18px; border: 1px solid #e2e8f0; margin-bottom: 16px; text-align: center; }
+  .score-card h2 { font-size: 18px; color: #0f172a; margin-bottom: 12px; }
+  .score-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 14px 0; }
+  @media(min-width: 600px) { .score-stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat-box { padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; }
+  .stat-box .num { font-size: 20px; font-weight: 800; }
+  .stat-box .lbl { font-size: 10px; color: #64748b; text-transform: uppercase; margin-top: 2px; }
+  .stat-net { background: #eef2ff; border-color: #c7d2fe; } .stat-net .num { color: #3730a3; }
+  .stat-correct { background: #ecfdf5; border-color: #a7f3d0; } .stat-correct .num { color: #047857; }
+  .stat-wrong { background: #fff1f2; border-color: #fecdd3; } .stat-wrong .num { color: #be123c; }
+  
+  .filter-bar { display: flex; gap: 6px; margin: 14px 0; overflow-x: auto; padding-bottom: 4px; }
+  .filter-btn { padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; border: 1px solid #cbd5e1; background: white; cursor: pointer; }
+  .filter-btn.active { background: #1e1b4b; color: white; border-color: #1e1b4b; }
+  
+  .sol-card { background: white; border-radius: 8px; padding: 14px; border: 1px solid #e2e8f0; margin-bottom: 12px; text-align: left; }
+  .sol-card.correct { border-left: 4px solid #059669; }
+  .sol-card.wrong { border-left: 4px solid #dc2626; }
+  .sol-card.unanswered { border-left: 4px solid #94a3b8; }
+  .sol-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+  .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+  .badge-correct { background: #d1fae5; color: #065f46; }
+  .badge-wrong { background: #fee2e2; color: #991b1b; }
+  .badge-skip { background: #f1f5f9; color: #475569; }
+  .rationale { margin-top: 10px; background: #eff6ff; padding: 8px 10px; border-radius: 6px; font-size: 11px; color: #1e3a8a; border-left: 3px solid #3b82f6; }
+  
+  @media print {
+    header, .palette-panel, .filter-bar, .start-btn, .btn-sm { display: none !important; }
+    body { background: white; }
+    .score-card, .sol-card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
   }
+</style>
+</head>
+<body>
+<header>
+  <div class="title-area">
+    <h1>Bank Promotion 2026-27</h1>
+    <p id="sub-title">500 MCQ Composite Mock Series</p>
+  </div>
+  <div id="test-ctrl" class="hidden" style="display:flex; gap:8px; align-items:center;">
+    <div class="timer-box" id="timer-box">120:00</div>
+    <button class="submit-btn" onclick="submitTest()">Submit</button>
+  </div>
+</header>
 
-  container.innerHTML = list.map(item => {
-    let badge = <span class="badge badge-skip">Unanswered (0.0)</span>;
-    if (item.status === 'correct') badge = <span class="badge badge-correct">&#10003; Correct (+1.0)</span>;
-    if (item.status === 'wrong') badge = <span class="badge badge-wrong">&#10007; Incorrect (-0.25)</span>;
+<div class="container">
 
-    return 
-      <div class="sol-card ${item.status}">
-        <div class="sol-header">
-          <span>Q${item.actNum} of 500</span>
-          ${badge}
+  <!-- Home / Set Selection View -->
+  <div id="view-home">
+    <div class="set-card" style="margin-top:10px;">
+      <h2 style="font-size:18px;">Composite Practice Sets</h2>
+      <p style="margin-bottom:0;">5 tests of 100 questions each (+1.0 mark correct, -0.25 mark incorrect). Click any test to begin:</p>
+    </div>
+    <div class="set-grid" id="set-grid"></div>
+
+    <!-- Saved Past Attempts Panel -->
+    <div class="history-card" id="history-panel">
+      <h3 style="font-size:14px; font-weight:700; margin-bottom:8px; color:#1e293b;">Past Saved Attempts</h3>
+      <div id="history-list">
+        <p style="font-size:12px; color:#94a3b8;">No attempts recorded yet. Take a test to save your results here.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Test View -->
+  <div id="view-test" class="hidden">
+    <div class="q-panel">
+      <div class="q-header">
+        <span id="q-set-name">Set 1</span>
+        <span id="q-counter">Question 1/100</span>
+      </div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options-list" id="q-options"></div>
+      <div class="q-actions">
+        <div>
+          <button class="nav-btn" onclick="prevQ()">&#8592; Prev</button>
+          <button class="nav-btn primary" onclick="nextQ()">Next &#8594;</button>
         </div>
-        <div style="font-size:13px; font-weight:600; margin-bottom:8px;">${item.q}</div>
-        <div style="font-size:12px; margin-bottom:4px;">
-          <strong>Your Answer:</strong> ${item.user !== undefined ? letters[item.user] + ') ' + item.o[item.user] : '<span style="color:#64748b;">None</span>'}
+        <button class="clear-btn" onclick="clearAns()">Clear</button>
+      </div>
+    </div>
+    
+    <div class="palette-panel">
+      <div class="palette-header">
+        <span>Question Palette</span>
+        <span id="palette-status">0/100 Answered</span>
+      </div>
+      <div class="palette-grid" id="palette-grid"></div>
+    </div>
+  </div>
+
+  <!-- Scorecard & Solution View -->
+  <div id="view-result" class="hidden">
+    <div class="score-card">
+      <h2 id="res-title">Test Result</h2>
+      <div class="score-stats">
+        <div class="stat-box stat-net">
+          <div class="num" id="stat-score">0.00</div>
+          <div class="lbl">Net Score / 100</div>
         </div>
-        <div style="font-size:12px; color:#047857;">
-          <strong>Correct Answer:</strong> ${letters[item.a]}) ${item.o[item.a]}
+        <div class="stat-box stat-correct">
+          <div class="num" id="stat-correct">0</div>
+          <div class="lbl">Correct (+1.0)</div>
         </div>
-        <div class="rationale">
-          <strong>Official Rationale:</strong> ${item.e}
+        <div class="stat-box stat-wrong">
+          <div class="num" id="stat-wrong">0</div>
+          <div class="lbl">Wrong (-0.25)</div>
+        </div>
+        <div class="stat-box">
+          <div class="num" id="stat-skip">0</div>
+          <div class="lbl">Unanswered</div>
         </div>
       </div>
-    ;
-  }).join('');
-}
+      <div style="display:flex; justify-content:center; gap:8px;">
+        <button class="start-btn" onclick="backHome()" style="max-width:160px;">Back to Home</button>
+        <button class="start-btn" onclick="window.print()" style="max-width:160px; background:#059669;">Print / PDF</button>
+      </div>
+    </div>
 
-function setFilter(type, btn) {
-  curFilter = type;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderSolutions();
-}
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all', this)">All (100)</button>
+      <button class="filter-btn" onclick="setFilter('correct', this)">Correct</button>
+      <button class="filter-btn" onclick="setFilter('wrong', this)">Incorrect</button>
+      <button class="filter-btn" onclick="setFilter('unanswered', this)">Unattempted</button>
+    </div>
 
-function backHome() {
-  document.getElementById('view-result').classList.add('hidden');
-  document.getElementById('view-test').classList.add('hidden');
-  document.getElementById('view-home').classList.remove('hidden');
-  renderHistory();
-}
+    <div id="solution-list"></div>
+  </div>
 
-window.onload = init;
-</script>
-</body>
-</html>
+</div>
+
+<script>
+const QDATA = [
+  {q: "Under Section 26A of the Banking Regulation Act, 1949, balances in deposit accounts remaining inoperative for how many years are transferred to the Depositor Education and Awareness (DEA) Fund?", o: ["5 years", "7 years", "10 years", "12 years"], a: 2, e: "Under Section 26A of the Banking Regulation Act, 1949, any deposit account inoperative for 10 years or more must be transferred to the DEA Fund on the 24th of each month."},
+{q: "What simple interest rate is payable to depositors when claiming funds previously transferred to the Depositor Education and Awareness (DEA) Fund (as per current RBI guidelines)?", o: ["2.5% p.a.", "3.0% p.a.", "3.5% p.a.", "4.0% p.a."], a: 1, e: "RBI currently mandates a simple interest rate of 3.0% p.a. on eligible claim amounts transferred to the DEA Fund."},
+  {q: "Under the RBI Integrated Ombudsman Scheme (RB-IOS), what is the maximum compensation the Ombudsman can award for loss suffered by the complainant directly out of the act/omission of the regulated entity?", o: ["₹10 Lakh", "₹20 Lakh", "₹30 Lakh", "₹50 Lakh"], a: 1, e: "The Banking/Integrated Ombudsman can award compensation up to ₹20 Lakh for direct financial loss, plus up to ₹1 Lakh for mental agony and harassment."},
+  {q: "What is the per-transaction limit for UPI Lite payments without requiring a UPI PIN?", o: ["₹200", "₹500", "₹1,000", "₹2,000"], a: 1, e: "NPCI permits UPI Lite offline/small-value transactions up to ₹500 per transaction without entering a UPI PIN (with total wallet balance cap of ₹2,000)."},
+  {q: "Under Section 20 of the Banking Regulation Act, 1949, banks are strictly prohibited from granting loans and advances against the security of:", o: ["Government Securities", "Real Estate", "Its own shares", "Gold ornaments"], a: 2, e: "Section 20 of the Banking Regulation Act, 1949 prohibits banks from holding or granting loans against the security of their own shares."},
+  {q: "What is the maximum limit of deposit insurance provided per depositor per bank by the Deposit Insurance and Credit Guarantee Corporation (DICGC)?", o: ["₹1 Lakh", "₹2 Lakh", "₹5 Lakh", "₹10 Lakh"], a: 2, e: "DICGC provides insurance coverage up to ₹5 Lakh per depositor (principal + interest) across all accounts in the same capacity and right at a bank."},
+  {q: "Under the Prevention of Money Laundering Act (PMLA), 2002, Cash Transaction Reports (CTR) for cash transactions exceeding ₹10 Lakh must be submitted to FIU-IND by which date of the succeeding month?", o: ["7th day", "10th day", "15th day", "30th day"], a: 2, e: "CTRs for all cash transactions above ₹10 Lakh (or equivalent foreign currency) must be submitted to FIU-IND by the 15th of the succeeding month."},
+  {q: "What does the acronym 'LEI' stand for in banking regulatory reporting for large financial exposures?", o: ["Loan Eligibility Index", "Legal Entity Identifier", "Liquid Exposure Indicator", "Leverage Ratio Instrument"], a: 1, e: "LEI stands for Legal Entity Identifier, a 20-digit unique global reference code used to identify legally distinct entities engaging in financial transactions."},
+  {q: "Non-Banking Financial Companies (NBFCs) require registration with RBI under which section of the Reserve Bank of India Act, 1934?", o: ["Section 21", "Section 35A", "Section 45-IA", "Section 42(1)"], a: 2, e: "Section 45-IA of the RBI Act, 1934 mandates that no NBFC shall commence or carry on business without obtaining a certificate of registration from RBI."},
+  {q: "Under Negotiable Instruments Act, 1881, dishonour of a cheque for insufficiency of funds is an offence covered under which Section?", o: ["Section 128", "Section 138", "Section 141", "Section 148"], a: 1, e: "Section 138 of the NI Act, 1881 deals with the penalty and criminal liability for dishonour of cheques due to insufficiency of funds in the account."},
+  {q: "What is the standard maximum transaction limit for normal UPI transactions per day (excluding specific categories like capital markets/education/healthcare)?", o: ["₹50,000", "₹1,000,000", "₹1,00,000", "₹5,00,000"], a: 2, e: "The standard per-day UPI transaction limit set by NPCI is ₹1 Lakh per user per day for general peer-to-peer and merchant transactions."},
+  {q: "Which organization in India regulates and supervises Housing Finance Companies (HFCs) as an umbrella regulator following regulatory alignment?", o: ["National Housing Bank (NHB)", "Reserve Bank of India (RBI)", "SEBI", "IRDAI"], a: 1, e: "Regulatory oversight of HFCs was transferred from NHB to the RBI under the
+Finance Act, 2019."},
+  {q: "What is the mandatory threshold ceiling of aggregate exposure above which non-individual borrowers must mandatorily obtain a 20-digit LEI code from Legal Entity Identifier India Ltd (LEIL)?", o: ["₹1 Crore", "₹5 Crore", "₹10 Crore", "₹50 Crore"], a: 1, e: "RBI mandated that non-individual entities having aggregate credit exposure of ₹5 Crore and above from banks/FIs must obtain an LEI code."},
+  {q: "Under the Official Languages Act, 1963 and Rules, into how many regions (A, B, C) is India divided for implementing Rajbhasha targets?", o: ["2 Regions", "3 Regions", "4 Regions", "5 Regions"], a: 1, e: "India is divided into 3 Regions: Region A (Hindi speaking), Region B (Gujarat, Maharashtra, Punjab, Chandigarh), and Region C (Rest of India)."},
+  {q: "What is the maximum period within which a Suspicious Transaction Report (STR) must be furnished to FIU-IND after arriving at a conclusion of suspicion?", o: ["3 working days", "7 working days", "15 days", "30 days"], a: 1, e: "Under PMLA rules, an STR must be submitted to FIU-IND within 7 working days of the Principal Officer confirming the suspicious nature of the transaction."},
+  {q: "Under Section 42(1) of the RBI Act, 1934, Cash Reserve Ratio (CRR) is calculated as a specified percentage of a bank's:", o: ["Gross Advances", "Net Demand and Time Liabilities (NDTL)", "Total Assets", "Paid-up Capital and Reserves"], a: 1, e: "CRR is the proportion of Net Demand and Time Liabilities (NDTL) that scheduled commercial banks are required to maintain as cash balance with the RBI."},
+  {q: "In the context of Banking Cyber Security Guidelines, what does 'SOC' stand for?", o: ["System Operating Core", "Security Operations Centre", "Standard Operational Code", "Secure Online Clearing"], a: 1, e: "SOC stands for Security Operations Centre, a centralized unit dealing with IT security issues on an organizational and technical level."},
+  {q: "What is the statutory limit for Statutory Liquidity Ratio (SLR) maintenance under Section 24 of the Banking Regulation Act, 1949?", o: ["Up to 20%", "Up to 40%", "Up to 50%", "Up to 100%"], a: 1, e: "Section 24 of the Banking Regulation Act empowers RBI to specify SLR for banks up to a maximum ceiling of 40% of NDTL."},
+  {q: "In Centralized KYC Registry (CKYCR), how many digits comprise the unique KYC Identifier (KIN) issued to an individual?", o: ["10 digits", "12 digits", "14 digits", "16 digits"], a: 2, e: "CKYCR assigns a unique 14-digit KYC Identifier Number (KIN) to individuals upon registration of their KYC records."},
+  {q: "What is the validity period of a demand draft or cheque under Negotiable Instruments Act / RBI directions?", o: ["1 month", "3 months", "6 months", "12 months"], a: 1, e: "Cheques, Demand Drafts, Pay Orders, and Banker's Cheques are valid for 3 months from the date of issue."},
+  {q: "Under RBI's Large Exposure Framework (LEF), what is the single counterparty exposure limit for a bank relative to its Tier-1 Capital Base?", o: ["15%", "20%", "25%", "30%"], a: 1, e: "Under LEF, the exposure limit to a single counterparty is 20% of the bank's Tier-1 capital (extendable to 25% in exceptional cases approved by Board)."},
+  {q: "Under RBI's Large Exposure Framework (LEF), what is the exposure ceiling for a group of connected counterparties relative to Tier-1 Capital?", o: ["20%", "25%", "30%", "35%"], a: 1, e: "The group exposure limit under LEF is capped at 25% of the bank's Tier-1 Capital Base."},
+  {q: "Credit Audit is mandatory for all credit facilities / exposure limits exceeding which threshold limit?", o: ["₹1 Crore", "₹2 Crore", "₹5 Crore", "₹10 Crore"], a: 2, e: "As per Master Credit Policy guidelines, credit facilities of ₹5 Crore and above must undergo mandatory Post-Sanction Credit Audit within 3 months of disbursement."},
+{q: "Agency for Specialized Monitoring (ASM) appointment is mandatory for borrower accounts having aggregate credit exposure above:", o: ["₹50 Crore", "₹100 Crore", "₹250 Crore", "₹500 Crore"], a: 2, e: "IBA/RBI mandates ASM monitoring for large credit exposures of ₹250 Crore and above across the banking system."},
+  {q: "What is the ceiling on a bank's aggregate Capital Market Exposure (CME) relative to its Net Worth as on March 31 of the previous year?", o: ["20%", "30%", "40%", "50%"], a: 2, e: "A bank's aggregate capital market exposure (both direct and indirect) cannot exceed 40% of its net worth as of March 31 of the previous financial year."},
+  {q: "Under Master Credit Policy, what is the Maximum Permissible Bank Finance (MPBF) Nayak Committee benchmark working capital lending norm for MSE units?", o: ["15% of projected annual turnover", "20% of projected annual turnover", "25% of projected annual turnover", "30% of projected annual turnover"], a: 1, e: "Under Nayak Committee turnover method, working capital limit is assessed at 20% of projected annual turnover for limits up to ₹5 Crore."},
+  {q: "What is the minimum Minimum Retention Requirement (MRR) for asset pool buyouts / direct assignment of loans with original maturity up to 2 years?", o: ["5%", "10%", "15%", "20%"], a: 0, e: "For securitization / loan pool assignment with original maturity up to 24 months, the MRR is 5% of the book value of the pool."},
+  {q: "What is the Minimum Retention Requirement (MRR) for pool buyout loans with original maturity exceeding 2 years?", o: ["5%", "10%", "12%", "15%"], a: 1, e: "For loans with maturity exceeding 2 years (or bullet payments), the MRR requirement is 10%."},
+  {q: "Under RBI prudential norms, unsecured exposure of a bank should not exceed what percentage of total outstanding advances?", o: ["10%", "15%", "20%", "25%"], a: 2, e: "Banks must restrict total unsecured exposures to within 20% of their total loan book exposure."},
+  {q: "What is the maximum tenure for Short Term Working Capital Loan / Demand Loan granted under EBLR framework?", o: ["6 months", "12 months", "24 months", "36 months"], a: 1, e: "Working capital demand loans are sanctioned for a maximum period of 12 months subject to annual review."},
+  {q: "Under EBLR (External Benchmark Lending Rate) guidelines, how frequently must banks reset interest rates for floating rate loans?", o: ["Monthly", "At least once in 3 months", "Half-yearly", "Annually"], a: 1, e: "RBI mandates that interest rates linked to external benchmarks (like Repo) must be reset at least once every three months."},
+  {q: "For take-over of credit accounts from other banks, what is the mandatory minimum period of satisfactory track record required at the existing bank?", o: ["6 months", "1 year", "2 years", "3 years"], a: 1, e: "Take-over of loan accounts requires at least 1 year of satisfactory conduct with no default or SMA classification with the existing lender."},
+  {q: "Under TReDS (Trade Receivables Discounting System), what is the turnover threshold above which buyers (corporates/PSUs) are required to register on TReDS?", o: ["₹100 Crore", "₹250 Crore", "₹500 Crore", "₹1,000 Crore"], a: 2, e: "Govt of India mandated that companies with turnover exceeding ₹500 Crore must register on TReDS portal."},
+  {q: "What is the maximum limit for bank finance against pledge of shares to individual borrowers for personal purposes?", o: ["₹10 Lakh", "₹20 Lakh", "₹25 Lakh", "₹50 Lakh"], a: 1, e: "Loans to individuals against pledge of shares/debentures are capped at ₹20 Lakh (demat form) and ₹10 Lakh (physical form)."},
+  {q: "Under RBI guidelines on Commercial Real Estate (CRE), what is the risk weight assigned to CRE exposures?", o: ["75%", "100%", "110%", "150%"], a: 2, e: "Commercial Real Estate (CRE) exposures attract a standardized risk weight of 110% (150% for CRE-Residential Housing)."},
